@@ -7,7 +7,6 @@ from eralchemy2 import render_er
 
 Base = declarative_base()
 
-
 class Users(Base):
     __tablename__ = 'users'
     id = Column(Integer, primary_key=True)
@@ -16,90 +15,95 @@ class Users(Base):
     email = Column(String(250), nullable=False)
     password = Column(String(250), nullable=False)
 
-    # Relaciones
-    followers = relationship('Followers', foreign_keys='Followers.user_id')  
-    # Relación uno a muchos (un usuario puede tener muchos seguidores)
-    following = relationship('Followers', foreign_keys='Followers.follower_id')  
-    # Relación uno a muchos (un usuario puede seguir a muchos usuarios-followers)
-    posts = relationship('Post')  
-    # Relación uno a muchos (un usuario puede tener muchos posts)
+    # Relación: Un usuario puede tener muchos seguidores (followers)
+    followers_id = Column(Integer, ForeignKey('followers.user_id'))
+    followers = relationship('Followers')
+
+    # Relación: Un usuario puede seguir a muchos usuarios (followers)
+    following_id = Column(Integer, ForeignKey('followers.follower_id'))
+    following = relationship('Followers')  
+
+    # Relación: Un usuario puede tener muchos posts
+    user_id_posts = Column(Integer, ForeignKey('users.id'))
+    posts = relationship('Post') 
+
+    # Relación: Un usuario puede tener muchos likes
+    user_id_likes = Column(Integer, ForeignKey('users.id'))
     likes = relationship('Likes')  
-    # Relación uno a muchos (un usuario puede dar muchos likes)
+
+    # Relación: Un usuario puede tener muchos medios: publicación, reels..
+    user_id_media = Column(Integer, ForeignKey('users.id'))
     media = relationship('Media')  
-    # Relación uno a muchos (un usuario puede tener muchos medios asociados)
+
+    # Relación: Un usuario puede tener muchos comentarios
+    user_id_comments = Column(Integer, ForeignKey('users.id'))
     comments = relationship('Comments')  
-    # Relación uno a muchos (un usuario puede tener muchos comentarios)
 
 class Followers(Base):
     __tablename__ = 'followers'
     id = Column(Integer, primary_key=True)
-    follower_id = Column(Integer, ForeignKey(Users.id))
-    user_id = Column(Integer, ForeignKey(Users.id))
     accepted = Column(Boolean)
 
-    # Relaciones con otras tablas
-    follower = relationship(Users, foreign_keys='Followers.follower_id')  
-    # Relación muchos a uno (muchos seguidores pertenecen a un usuario)
-    user = relationship(Users, foreign_keys='Followers.user_id')  
-    # Relación muchos a uno (muchos seguidores están asociados a un usuario)
+    # Relación: Muchos seguidores pertenecen a un usuario
+    follower_id = Column(Integer, ForeignKey('users.id'))
+    follower = relationship('Users', foreign_keys=[follower_id])
+    # Relación: Muchos seguidores están asociados a un usuario
+    user_id = Column(Integer, ForeignKey('users.id'))
+    user = relationship('Users', foreign_keys=[user_id])
+    
 
 class Post(Base):
     __tablename__ = 'posts'
     id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey(Users.id))
     photo = Column(String(50))
     description = Column(String(250))
 
-    # Relaciones con otras tablas
-    user = relationship(Users)  
-    # Relación muchos a uno (muchos posts pertenecen a un usuario)
+    # Relación: Muchos posts pertenecen a un usuario
+    user_id = Column(Integer, ForeignKey('users.id'))
+    users = relationship(Users)
+    
+    # Relación: Un post puede tener muchos comentarios
+    post_id_comments = Column(Integer, ForeignKey('posts.id'))
     comments = relationship('Comments')  
-    # Relación uno a muchos (un post puede tener muchos comentarios)
+    
 
 class Likes(Base):
-    # Definición de la tabla 'likes'
     __tablename__ = 'likes'
-    # Columnas de la tabla
     id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey(Users.id))
-    post_id = Column(Integer, ForeignKey(Post.id))
 
-    # Relaciones con otras tablas
-    user = relationship(Users, foreign_keys='Likes.user_id')  
-    # Relación muchos a uno (muchos likes pertenecen a un usuario)
-    post = relationship(Post)  
-    # Relación muchos a uno (muchos likes están asociados a un post)
+    # Relación: Muchos likes pertenecen a un usuario
+    user_id = Column(Integer, ForeignKey('users.id'))
+    user = relationship(Users)  
+
+    # Relación: Muchos likes están asociados a un post
+    post_id = Column(Integer, ForeignKey('posts.id'))
+    post = relationship(Post)   
+    
 
 class Media(Base):
-    # Definición de la tabla 'media'
     __tablename__ = 'media'
-    # Columnas de la tabla
     id = Column(Integer, primary_key=True)
     url = Column(String(255), nullable=False)
     type = Column(String(50), nullable=False)
-    user_id = Column(Integer, ForeignKey(Users.id))
 
-    # Relaciones con otras tablas
+    # Relación: Muchos medios pertenecen a un usuario
+    user_id = Column(Integer, ForeignKey('users.id'))
     user = relationship(Users)  
-    # Relación muchos a uno (muchos medios pertenecen a un usuario)
+    
 
 class Comments(Base):
-    # Definición de la tabla 'comments'
     __tablename__ = 'comments'
-    # Columnas de la tabla
     id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey(Users.id))
-    post_id = Column(Integer, ForeignKey(Post.id))
     text = Column(String(250))
 
-    # Relaciones con otras tablas
+    # Relación: Muchos comentarios pertenecen a un usuario
+    user_id = Column(Integer, ForeignKey('users.id'))
     user = relationship(Users)  
-    # Relación muchos a uno (muchos comentarios pertenecen a un usuario)
-    post = relationship(Post)  
-    # Relación muchos a uno (muchos comentarios están asociados a un post)
 
-    def to_dict(self):
-        return {}
+    # Relación: Muchos comentarios están asociados a un post
+    post_id = Column(Integer, ForeignKey('posts.id'))
+    post = relationship(Post)   
+
 
 ## Draw from SQLAlchemy base
 try:
