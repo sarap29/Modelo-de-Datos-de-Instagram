@@ -15,30 +15,6 @@ class Users(Base):
     email = Column(String(250), nullable=False)
     password = Column(String(250), nullable=False)
 
-    # Relación: Un usuario puede tener muchos seguidores (followers)
-    followers_id = Column(Integer, ForeignKey('followers.user_id'))
-    followers = relationship('Followers')
-
-    # Relación: Un usuario puede seguir a muchos usuarios (followers)
-    following_id = Column(Integer, ForeignKey('followers.follower_id'))
-    following = relationship('Followers')  
-
-    # Relación: Un usuario puede tener muchos posts
-    user_id_posts = Column(Integer, ForeignKey('users.id'))
-    posts = relationship('Post') 
-
-    # Relación: Un usuario puede tener muchos likes
-    user_id_likes = Column(Integer, ForeignKey('users.id'))
-    likes = relationship('Likes')  
-
-    # Relación: Un usuario puede tener muchos medios: publicación, reels..
-    user_id_media = Column(Integer, ForeignKey('users.id'))
-    media = relationship('Media')  
-
-    # Relación: Un usuario puede tener muchos comentarios
-    user_id_comments = Column(Integer, ForeignKey('users.id'))
-    comments = relationship('Comments')  
-
 class Followers(Base):
     __tablename__ = 'followers'
     id = Column(Integer, primary_key=True)
